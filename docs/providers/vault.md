@@ -27,6 +27,8 @@ sudo apt update && sudo apt install vault
 vault = { type = "vault", address = "https://vault.example.com:8200", path = "secret/myapp" }  # token optional, can use VAULT_TOKEN env var
 ```
 
+By default fnox runs the `vault` CLI. To use OpenBao, set `command = "bao"` on the provider, or set `FNOX_VAULT_COMMAND=bao`.
+
 ## Setup
 
 ### 1. Configure Vault Access

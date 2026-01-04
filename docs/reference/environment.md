@@ -238,6 +238,9 @@ Used by Bitwarden provider.
 ```bash
 export VAULT_ADDR="https://vault.example.com:8200"
 export VAULT_TOKEN="hvs.CAESIJ..."
+
+# Optional: override the CLI executable (e.g. OpenBao)
+export FNOX_VAULT_COMMAND="bao"
 ```
 
 Used by Vault provider.

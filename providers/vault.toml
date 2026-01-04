@@ -27,3 +27,9 @@ type = "optional"
 placeholder = ""
 label = "Token (optional, uses env var if not set):"
 wizard = true
+
+[fields.command]
+type = "optional"
+placeholder = "vault"
+label = "CLI command (optional, e.g. 'vault' or 'bao')"
+wizard = true

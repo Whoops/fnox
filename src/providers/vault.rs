@@ -8,15 +8,24 @@ pub struct HashiCorpVaultProvider {
     address: String,
     path: Option<String>,
     token: Option<String>,
+    command: Option<String>,
 }
 
 impl HashiCorpVaultProvider {
-    pub fn new(address: String, path: Option<String>, token: Option<String>) -> Self {
+    pub fn new(address: String, path: Option<String>, token: Option<String>, command: Option<String>) -> Self {
         Self {
             address,
             path,
             token,
+            command,
         }
+    }
+
+    fn vault_command(&self) -> &str {
+        self.command
+            .as_deref()
+            .or(VAULT_COMMAND.as_deref())
+            .unwrap_or("vault")
     }
 
     fn get_secret_path(&self, key: &str) -> String {
@@ -30,7 +39,7 @@ impl HashiCorpVaultProvider {
     fn execute_vault_command(&self, args: &[&str]) -> Result<String> {
         tracing::debug!("Executing vault command with args: {:?}", args);
 
-        let mut cmd = Command::new("vault");
+        let mut cmd = Command::new(self.vault_command());
 
         // Set VAULT_ADDR from provider config
         cmd.env("VAULT_ADDR", &self.address);
@@ -149,3 +158,5 @@ static VAULT_TOKEN: LazyLock<Option<String>> = LazyLock::new(|| {
         .or_else(|_| env::var("VAULT_TOKEN"))
         .ok()
 });
+
+static VAULT_COMMAND: LazyLock<Option<String>> = LazyLock::new(|| env::var("FNOX_VAULT_COMMAND").ok());

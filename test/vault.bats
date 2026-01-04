@@ -232,6 +232,71 @@ EOF
 	delete_test_vault_secret "$secret_name"
 }
 
+@test "Vault provider can use OpenBao-style executable via config (command=bao)" {
+	create_vault_config
+
+	secret_name=$(create_test_vault_secret)
+
+	cat >>"${FNOX_CONFIG_FILE}" <<EOF
+
+[providers.vault]
+command = "bao"
+
+[secrets.TEST_WITH_BAO_COMMAND]
+provider = "vault"
+value = "$secret_name"
+EOF
+
+	# Create a local `bao` wrapper that forwards to `vault` and records invocation.
+	mkdir -p "$TEST_TEMP_DIR/bin"
+	cat >"$TEST_TEMP_DIR/bin/bao" <<'EOS'
+#!/usr/bin/env bash
+set -euo pipefail
+touch "${HOME}/.fnox-test-bao-called"
+exec vault "$@"
+EOS
+	chmod +x "$TEST_TEMP_DIR/bin/bao"
+	export PATH="$TEST_TEMP_DIR/bin:$PATH"
+
+	run "$FNOX_BIN" get TEST_WITH_BAO_COMMAND
+	assert_success
+	assert_output --partial "test-secret-value-"
+	assert_file_exist "$HOME/.fnox-test-bao-called"
+
+	delete_test_vault_secret "$secret_name"
+}
+
+@test "Vault provider can use OpenBao-style executable via env (FNOX_VAULT_COMMAND=bao)" {
+	create_vault_config
+
+	secret_name=$(create_test_vault_secret)
+
+	cat >>"${FNOX_CONFIG_FILE}" <<EOF
+
+[secrets.TEST_WITH_BAO_ENV]
+provider = "vault"
+value = "$secret_name"
+EOF
+
+	# Create a local `bao` wrapper that forwards to `vault` and records invocation.
+	mkdir -p "$TEST_TEMP_DIR/bin"
+	cat >"$TEST_TEMP_DIR/bin/bao" <<'EOS'
+#!/usr/bin/env bash
+set -euo pipefail
+touch "${HOME}/.fnox-test-bao-called"
+exec vault "$@"
+EOS
+	chmod +x "$TEST_TEMP_DIR/bin/bao"
+	export PATH="$TEST_TEMP_DIR/bin:$PATH"
+
+	run env FNOX_VAULT_COMMAND=bao "$FNOX_BIN" get TEST_WITH_BAO_ENV
+	assert_success
+	assert_output --partial "test-secret-value-"
+	assert_file_exist "$HOME/.fnox-test-bao-called"
+
+	delete_test_vault_secret "$secret_name"
+}
+
 @test "Vault provider with custom path prefix" {
 	# Create config with custom path (no /data/ - vault kv adds it automatically)
 	cat >"${FNOX_CONFIG_FILE:-fnox.toml}" <<EOF
