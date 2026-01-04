@@ -1,6 +1,7 @@
 use crate::env;
 use crate::error::{FnoxError, Result};
 use async_trait::async_trait;
+use std::fs;
 use std::process::Command;
 use std::sync::LazyLock;
 
@@ -40,9 +41,11 @@ impl HashiCorpVaultProvider {
             .token
             .as_ref()
             .or(VAULT_TOKEN.as_ref())
+            .or(VAULT_TOKEN_FILE.as_ref())
             .ok_or_else(|| {
                 FnoxError::Provider(
-                    "VAULT_TOKEN not set. Set it in provider config or environment.".to_string(),
+                    "VAULT_TOKEN not set. Set it in provider config, environment, or ~/.vault-token."
+                        .to_string(),
                 )
             })?;
 
@@ -148,4 +151,20 @@ static VAULT_TOKEN: LazyLock<Option<String>> = LazyLock::new(|| {
     env::var("FNOX_VAULT_TOKEN")
         .or_else(|_| env::var("VAULT_TOKEN"))
         .ok()
+});
+
+static VAULT_TOKEN_FILE: LazyLock<Option<String>> = LazyLock::new(|| {
+    if env::HOME_DIR.as_os_str().is_empty() {
+        return None;
+    }
+
+    let path = env::HOME_DIR.join(".vault-token");
+    let token = fs::read_to_string(path).ok()?;
+    let token = token.trim();
+
+    if token.is_empty() {
+        return None;
+    }
+
+    Some(token.to_string())
 });

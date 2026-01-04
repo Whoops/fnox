@@ -238,6 +238,8 @@ Used by Bitwarden provider.
 ```bash
 export VAULT_ADDR="https://vault.example.com:8200"
 export VAULT_TOKEN="hvs.CAESIJ..."
+
+# The Vault provider will also fall back to ~/.vault-token (last priority)
 ```
 
 Used by Vault provider.

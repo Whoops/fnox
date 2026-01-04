@@ -232,6 +232,29 @@ EOF
 	delete_test_vault_secret "$secret_name"
 }
 
+@test "Vault provider works with token from ~/.vault-token" {
+	create_vault_config
+
+	secret_name=$(create_test_vault_secret)
+
+	cat >>"${FNOX_CONFIG_FILE}" <<EOF
+
+[secrets.TEST_WITH_FILE_TOKEN]
+provider = "vault"
+value = "$secret_name"
+EOF
+
+	# Put the token in the location the vault CLI normally uses.
+	printf '%s\n' "$VAULT_TOKEN" >"$HOME/.vault-token"
+
+	# Ensure fnox cannot see the env var token and must fall back to ~/.vault-token.
+	run env -u VAULT_TOKEN -u FNOX_VAULT_TOKEN "$FNOX_BIN" get TEST_WITH_FILE_TOKEN
+	assert_success
+	assert_output --partial "test-secret-value-"
+
+	delete_test_vault_secret "$secret_name"
+}
+
 @test "Vault provider with custom path prefix" {
 	# Create config with custom path (no /data/ - vault kv adds it automatically)
 	cat >"${FNOX_CONFIG_FILE:-fnox.toml}" <<EOF

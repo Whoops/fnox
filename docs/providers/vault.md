@@ -24,7 +24,7 @@ sudo apt update && sudo apt install vault
 
 ```toml
 [providers]
-vault = { type = "vault", address = "https://vault.example.com:8200", path = "secret/myapp" }  # token optional, can use VAULT_TOKEN env var
+vault = { type = "vault", address = "https://vault.example.com:8200", path = "secret/myapp" }  # token optional (config token, VAULT_TOKEN env var, or ~/.vault-token)
 ```
 
 ## Setup
@@ -80,6 +80,9 @@ API_KEY = { provider = "vault", value = "api-key/value" }  # → secret/myapp/ap
 ```bash
 # Set token
 export VAULT_TOKEN="hvs.CAESIJ..."
+
+# Or let Vault write it (fnox will also read ~/.vault-token as a fallback)
+vault login
 
 # Get secrets
 fnox get DATABASE_URL

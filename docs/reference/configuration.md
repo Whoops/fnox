@@ -173,7 +173,7 @@ bitwarden = { type = "bitwarden", collection = "collection-id", organization_id 
 
 ```toml
 [providers]
-vault = { type = "vault", address = "https://vault.example.com:8200", path = "secret/myapp", token = "hvs.CAESIJ..." }  # token optional, can use VAULT_TOKEN env var
+vault = { type = "vault", address = "https://vault.example.com:8200", path = "secret/myapp", token = "hvs.CAESIJ..." }  # token optional (config token, VAULT_TOKEN env var, or ~/.vault-token)
 ```
 
 #### OS Keychain
